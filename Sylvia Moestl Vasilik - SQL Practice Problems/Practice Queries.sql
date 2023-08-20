@@ -14,7 +14,7 @@ FROM dbo.Categories
 
 
 -- 3. Sales Representatives. 
---    Weíd like to see just the FirstName, LastName, and HireDate of all the employees with the Title of Sales Representative.
+--    We‚Äôd like to see just the FirstName, LastName, and HireDate of all the employees with the Title of Sales Representative.
 
 SELECT FirstName, LastName, HireDate
 FROM dbo.Employees
@@ -22,7 +22,7 @@ WHERE Title LIKE '%Rep%'
 
 
 --4. Sales Representatives in the United States. 
---   Now weíd like to see the same columns as above, but only for those employees that both have the title of Sales Representative, and also are in the United States.
+--   Now we‚Äôd like to see the same columns as above, but only for those employees that both have the title of Sales Representative, and also are in the United States.
 
 SELECT FirstName, LastName, HireDate
 FROM dbo.Employees
@@ -45,8 +45,8 @@ FROM dbo.Suppliers
 WHERE ContactTitle NOT LIKE 'Marketing Manager'
 
 
---7. Products with ìquesoî in ProductName.
---   In the products table, weíd like to see the ProductID and ProductName for those products where the ProductName includes the string ìquesoî.
+--7. Products with ‚Äúqueso‚Äù in ProductName.
+--   In the products table, we‚Äôd like to see the ProductID and ProductName for those products where the ProductName includes the string ‚Äúqueso‚Äù.
 
 SELECT ProductID, ProductName
 FROM dbo.Products
@@ -54,7 +54,7 @@ WHERE ProductName LIKE '%queso%'
 
 
 --8. Orders shipping to France or Belgium.
---   Looking at the Orders table, thereís a field called ShipCountry. Write a query that shows the OrderID, CustomerID, and ShipCountry 
+--   Looking at the Orders table, there‚Äôs a field called ShipCountry. Write a query that shows the OrderID, CustomerID, and ShipCountry 
 --   for the orders where the ShipCountry is either France or Belgium.
 
 SELECT OrderID, CustomerID, ShipCountry
@@ -64,8 +64,8 @@ WHERE ShipCountry = 'France' OR ShipCountry = 'Belgium'
 
 --9. Orders shipping to any country in Latin America.
 --   Now, instead of just wanting to return all the orders from France of Belgium, we want to show all the orders from any Latin American country. But we
---   donít have a list of Latin American countries in a table in the Northwind database. So, weíre going to just use this list of Latin American countries that
---   happen to be in the Orders table: Brazil, Mexico, Argentina, Venezuela. It doesnít make sense to use multiple Or statements anymore, it would get too convoluted. 
+--   don‚Äôt have a list of Latin American countries in a table in the Northwind database. So, we‚Äôre going to just use this list of Latin American countries that
+--   happen to be in the Orders table: Brazil, Mexico, Argentina, Venezuela. It doesn‚Äôt make sense to use multiple Or statements anymore, it would get too convoluted. 
 --   Use the In statement.
 
 SELECT OrderID, CustomerID, ShipCountry
@@ -83,7 +83,7 @@ ORDER BY BirthDate
 
 
 --11. Showing only the Date with a DateTime field.
---    In the output of the query above, showing the Employees in order of BirthDate, we see the time of the BirthDate field, which we donít want. 
+--    In the output of the query above, showing the Employees in order of BirthDate, we see the time of the BirthDate field, which we don‚Äôt want. 
 --    Show only the date portion of the BirthDate field.
 
 SELECT FirstName, LastName, Title, CAST(BirthDate as date) as BirthDate
@@ -100,7 +100,7 @@ FROM dbo.Employees
 
 
 --13. OrderDetails amount per line item.
---    In the OrderDetails table, we have the fields UnitPrice and Quantity. Create a new field, TotalPrice, that multiplies these two together. Weíll
+--    In the OrderDetails table, we have the fields UnitPrice and Quantity. Create a new field, TotalPrice, that multiplies these two together. We‚Äôll
 --    ignore the Discount field for now. In addition, show the OrderID, ProductID, UnitPrice, and Quantity. Order by OrderID and ProductID.
 
 SELECT OrderID, ProductID, UnitPrice, Quantity, (UnitPrice * Quantity) as TotalPrice
@@ -109,7 +109,7 @@ ORDER BY 1,2
 
 
 --14. How many customers?
---    How many customers do we have in the Customers table? Show one value only, and donít rely on getting the recordcount at the end of a resultset.
+--    How many customers do we have in the Customers table? Show one value only, and don‚Äôt rely on getting the recordcount at the end of a resultset.
 
 SELECT COUNT(ContactName) as TotalCustomers
 FROM dbo.Customers
@@ -134,7 +134,7 @@ GROUP BY ShipCountry
 
 --17. Contact titles for customers
 --    Show a list of all the different values in the Customers table for ContactTitles. Also include a count for each ContactTitle.
---    This is similar in concept to the previous question ìCountries where there are customersî, except we now want a count for each ContactTitle.
+--    This is similar in concept to the previous question ‚ÄúCountries where there are customers‚Äù, except we now want a count for each ContactTitle.
 
 SELECT ContactTitle, COUNT(ContactTitle) as CountContactTitle
 FROM dbo.Customers
@@ -143,9 +143,9 @@ ORDER BY CountContactTitle DESC
 
 
 --18. Products with associated supplier names.
---    Weíd like to show, for each product, the associated Supplier. Show the ProductID, ProductName, and the CompanyName of the Supplier. Sort by ProductID.
+--    We‚Äôd like to show, for each product, the associated Supplier. Show the ProductID, ProductName, and the CompanyName of the Supplier. Sort by ProductID.
 --    This question will introduce what may be a new concept, the Join clause in SQL. The Join clause is used to join two or more relational database tables
---    together in a logical way. Hereís a data model of the relationship between Products and Suppliers.
+--    together in a logical way. Here‚Äôs a data model of the relationship between Products and Suppliers.
 
 SELECT ProductID, ProductName, CompanyName
 FROM dbo.Products as pro
@@ -155,8 +155,8 @@ ORDER BY ProductID
 
 
 --19. Orders and the Shipper that was used.
---    Weíd like to show a list of the Orders that were made, including the Shipper that was used. Show the OrderID, OrderDate (date only), and CompanyName
---    of the Shipper, and sort by OrderID. In order to not show all the orders (thereís more than 800), show only those rows with an OrderID of less than 10300.
+--    We‚Äôd like to show a list of the Orders that were made, including the Shipper that was used. Show the OrderID, OrderDate (date only), and CompanyName
+--    of the Shipper, and sort by OrderID. In order to not show all the orders (there‚Äôs more than 800), show only those rows with an OrderID of less than 10300.
 
 SELECT OrderID, CAST(OrderDate as Date) as OrderDate, CompanyName as Shippers
 FROM dbo.Orders as ord
@@ -167,7 +167,7 @@ ORDER BY OrderID
 
 
 --20. Categories, and the total products in each category.
---    For this problem, weíd like to see the total number of products in each category. Sort the results by the total number of products, in descending order.
+--    For this problem, we‚Äôd like to see the total number of products in each category. Sort the results by the total number of products, in descending order.
 
 SELECT CategoryName, COUNT(CategoryName) as TotalProducts
 FROM dbo.Categories as cat
@@ -197,8 +197,8 @@ ORDER BY ProductID
 
 
 --23. Products that need reordering, continued
---    Now we need to incorporate these fieldsó UnitsInStock, UnitsOnOrder, ReorderLevel, Discontinuedóinto our calculation. Weíll define
---    ìproducts that need reorderingî with the following: (1) UnitsInStock plus UnitsOnOrder are less than or equal to ReorderLevel 
+--    Now we need to incorporate these fields‚Äî UnitsInStock, UnitsOnOrder, ReorderLevel, Discontinued‚Äîinto our calculation. We‚Äôll define
+--    ‚Äúproducts that need reordering‚Äù with the following: (1) UnitsInStock plus UnitsOnOrder are less than or equal to ReorderLevel 
 --    (2) The Discontinued flag is false (0).
 
 SELECT ProductID, ProductName, UnitsInStock, UnitsOnOrder, ReorderLevel, Discontinued
@@ -208,7 +208,7 @@ WHERE (UnitsInStock + UnitsOnOrder) <= ReorderLevel AND Discontinued = '0'
 
 --24. Customer list by region
 --    A salesperson for Northwind is going on a business trip to visit customers, and would like to see a list of all customers, sorted by region, alphabetically.
---    However, he wants the customers with no region (null in the Region field) to be at the end, instead of at the top, where youíd normally find the null values.
+--    However, he wants the customers with no region (null in the Region field) to be at the end, instead of at the top, where you‚Äôd normally find the null values.
 --	  Within the same region, companies should be sorted by CustomerID.
 
 SELECT CustomerID, CompanyName, Region
@@ -219,3 +219,72 @@ ORDER BY
 		ELSE 0
 	END,
 Region, CustomerID
+
+
+--25. High freight charges
+--    Some of the countries we ship to have very high freight charges. We'd like to investigate some more shipping options for our customers, to be able to offer
+--    them lower freight charges. Return the three ship countries with the highest average freight overall, in descending order by average freight.
+
+SELECT TOP 3 ShipCountry, ROUND(AVG(Freight), 4) as AverageFreight
+FROM dbo.Orders
+GROUP BY ShipCountry
+ORDER BY AverageFreight DESC
+
+
+
+--26. High freight charges - 2015.
+--    We're continuing on the question above on high freight charges. Now, instead of using all the orders we have, we only want to see orders from the year 2015.
+
+SELECT TOP 3 ShipCountry, ROUND(AVG(Freight), 4) as AverageFreight
+FROM dbo.Orders
+WHERE OrderDate LIKE '%2015%'
+GROUP BY ShipCountry
+ORDER BY AverageFreight DESC
+
+
+
+--28. High freight charges - last year.
+--    We're continuing to work on high freight charges. We now want to get the three ship countries with the highest average freight charges. But instead of
+--    filtering for a particular year, we want to use the last 12 months of order data, using as the end date the last OrderDate in Orders. (2015/05/06 - 2016/05/06)
+
+SELECT MAX(OrderDate) FROM  dbo.Orders --(query to return the last date)
+SELECT DATEADD(yy, -1, (SELECT MAX(OrderDate) FROM dbo.Orders)) --(query to return the latest date + 12 months)
+
+SELECT TOP 3 ShipCountry, ROUND(AVG(Freight), 4) as AverageFreight
+FROM dbo.Orders
+WHERE OrderDate BETWEEN '2015-05-06 18:00:00:000' AND '2016-05-06 18:00:00:000'
+GROUP BY ShipCountry
+ORDER BY AverageFreight DESC
+
+SELECT TOP 3 ShipCountry, ROUND(AVG(Freight), 4) as AverageFreight
+FROM dbo.Orders
+WHERE OrderDate >= '2015-05-07' --I use 07 instead of 06 because the time difference
+GROUP BY ShipCountry
+ORDER BY AverageFreight DESC
+
+
+
+--29. Inventory list.
+--    We're doing inventory, and need to show information like the below, for all orders. Sort by OrderID and Product ID.
+
+SELECT ord.EmployeeID, LastName, ord.OrderID, ProductName, Quantity
+FROM dbo.Orders as ord
+	JOIN dbo.OrderDetails as ordd
+		ON ord.OrderID = ordd.OrderID
+	JOIN dbo.Products as pro
+		ON ordd.ProductID = pro.ProductID
+	JOIN dbo.Employees as emp
+		ON ord.EmployeeID = emp.EmployeeID
+ORDER BY ord.OrderID, ordd.ProductID
+
+
+
+--30. Customers with no orders
+--    There are some customers who have never actually placed an order. Show these customers.
+
+SELECT cus.CustomerID as CustomerCustomerID, ord.CustomerID as OrderCustomerID
+FROM dbo.Customers as cus
+	LEFT OUTER JOIN dbo.Orders as ord
+		ON cus.CustomerID = ord.CustomerID
+WHERE ord.CustomerID IS NULL
+
