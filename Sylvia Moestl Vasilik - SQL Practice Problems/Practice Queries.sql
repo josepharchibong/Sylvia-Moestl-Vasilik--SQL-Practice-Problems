@@ -288,3 +288,66 @@ FROM dbo.Customers as cus
 		ON cus.CustomerID = ord.CustomerID
 WHERE ord.CustomerID IS NULL
 
+
+
+--31. Customers with no orders for EmployeeID 4.
+--    One employee (Margaret Peacock, EmployeeID 4) has placed the most orders. However, there are some customers who've never placed an order with her.
+--    Show only those customers who have never placed an order with her.
+
+SELECT cus.CustomerID as CusCustomerID, cus.ContactName
+FROM dbo.Customers as cus
+	LEFT OUTER JOIN dbo.Orders as ord
+		ON cus.CustomerID = ord.CustomerID AND ord.EmployeeID = 4
+WHERE ord.CustomerID IS NULL 
+ORDER BY 1
+
+
+
+--32. High-value customers
+--    We want to send all of our high-value customers a special VIP gift. We're defining high-value customers as those who've made at least 1 order with a total
+--    value (not including the discount) equal to $10,000 or more. We only want to consider orders made in the year 2016.
+
+SELECT cust.CustomerID, cust.CompanyName, ords.OrderID, SUM(ordd.UnitPrice * ordd.Quantity)  as TotalOrderAmount
+FROM dbo.Customers as cust
+	JOIN dbo.Orders as ords
+		ON cust.CustomerID = ords.CustomerID
+	JOIN dbo.OrderDetails as ordd
+		ON ords.OrderID = ordd.OrderID
+WHERE ords.OrderDate >= '20160101' AND ords.OrderDate < '20170101'
+GROUP BY cust.CustomerID, cust.CompanyName, ords.OrderID
+HAVING SUM(ordd.UnitPrice * ordd.Quantity) >= 10000
+ORDER BY 4 DESC
+
+
+
+--33. High-value customers - total orders
+--    The manager has changed his mind. Instead of requiring that customers have at least one individual orders totaling $10,000 or more, he wants to define
+--    high-value customers as those who have orders totaling $15,000 or more in 2016. How would you change the answer to the problem above?
+
+SELECT cust.CustomerID, cust.CompanyName, SUM(ordd.UnitPrice * ordd.Quantity)  as TotalOrderAmount
+FROM dbo.Customers as cust
+	JOIN dbo.Orders as ords
+		ON cust.CustomerID = ords.CustomerID
+	JOIN dbo.OrderDetails as ordd
+		ON ords.OrderID = ordd.OrderID
+WHERE ords.OrderDate >= '20160101' AND ords.OrderDate < '20170101'
+GROUP BY cust.CustomerID, cust.CompanyName 
+HAVING SUM(ordd.UnitPrice * ordd.Quantity) >= 15000
+ORDER BY 3 DESC
+
+
+
+--34. High-value customers - with discount
+--    Change the above query to use the discount when calculating high-value customers. Order by the total amount which includes the discount.
+
+SELECT cust.CustomerID, cust.CompanyName, SUM(ordd.UnitPrice * ordd.Quantity)  as TotalWithoutDiscount,
+       SUM((ordd.UnitPrice * ordd.Quantity) * (1 - ordd.Discount))  as TotalWithDiscount
+FROM dbo.Customers as cust
+	JOIN dbo.Orders as ords
+		ON cust.CustomerID = ords.CustomerID
+	JOIN dbo.OrderDetails as ordd
+		ON ords.OrderID = ordd.OrderID
+WHERE ords.OrderDate >= '20160101' AND ords.OrderDate < '20170101'
+GROUP BY cust.CustomerID, cust.CompanyName 
+HAVING SUM((ordd.UnitPrice * ordd.Quantity) * (1 - ordd.Discount)) >= 15000
+ORDER BY 3 DESC
