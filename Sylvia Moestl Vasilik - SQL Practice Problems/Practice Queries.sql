@@ -351,3 +351,52 @@ WHERE ords.OrderDate >= '20160101' AND ords.OrderDate < '20170101'
 GROUP BY cust.CustomerID, cust.CompanyName 
 HAVING SUM((ordd.UnitPrice * ordd.Quantity) * (1 - ordd.Discount)) >= 15000
 ORDER BY 3 DESC
+
+
+--34. High-value customers - with discount
+--    Change the above query to use the discount when calculating high-value customers. Order by the total amount which includes the discount.
+
+SELECT cust.CustomerID, cust.CompanyName, SUM(ordd.UnitPrice * ordd.Quantity)  as TotalWithoutDiscount,
+       SUM((ordd.UnitPrice * ordd.Quantity) * (1 - ordd.Discount))  as TotalWithDiscount
+FROM dbo.Customers as cust
+	JOIN dbo.Orders as ords
+		ON cust.CustomerID = ords.CustomerID
+	JOIN dbo.OrderDetails as ordd
+		ON ords.OrderID = ordd.OrderID
+WHERE ords.OrderDate >= '20160101' AND ords.OrderDate < '20170101'
+GROUP BY cust.CustomerID, cust.CompanyName 
+HAVING SUM((ordd.UnitPrice * ordd.Quantity) * (1 - ordd.Discount)) >= 15000
+ORDER BY 3 DESC
+
+
+
+--35. Month-end orders
+--    At the end of the month, salespeople are likely to try much harder to get orders, to meet their month-end quotas. Show all orders made on the last day of the
+--    month. Order by EmployeeID and OrderID
+
+
+SELECT EmployeeID, OrderID, OrderDate 
+FROM dbo.Orders
+WHERE OrderDate = EOMONTH(OrderDate)
+ORDER BY 1, 2
+
+
+
+--36. Orders with many line items
+--    The Northwind mobile app developers are testing an app that customers will use to show orders. In order to make sure that even the largest orders will show up correctly
+--    on the app, they'd like some samples of orders that have lots of individual line items. Show the 10 orders with the most line items, in order of total line items.
+
+SELECT TOP 10 ordd.OrderID, COUNT(ordd.OrderID) as TotalOrderDetails
+FROM dbo.OrderDetails as ordd
+	LEFT JOIN dbo.Orders as ords
+		ON ordd.OrderID = ords.OrderID
+GROUP BY ordd.OrderID
+ORDER BY 2 DESC, 1 DESC
+
+SELECT TOP 10 Orders.OrderID, TotalOrderDetails = COUNT(*)
+FROM Orders
+	Join OrderDetails
+		ON Orders.OrderID = OrderDetails.OrderID
+GROUP BY Orders.OrderID
+ORDER BY COUNT(*) DESC
+
