@@ -400,3 +400,64 @@ FROM Orders
 GROUP BY Orders.OrderID
 ORDER BY COUNT(*) DESC
 
+
+
+--37. Orders - random assortment
+--    The Northwind mobile app developers would now like to just get a random assortment of orders for beta testing on their app. Show a random set of 2% of all orders.
+
+SELECT TOP 2 PERCENT OrderId
+FROM dbo.Orders
+ORDER BY NewID()
+
+
+
+--38. Orders - accidental double-entry
+--    Janet Leverling, one of the salespeople, has come to you with a request. She thinks that she accidentally double-entered a line item on an order, with a different 
+--    ProductID, but the same quantity. She remembers that the quantity was 60 or more. Show all the OrderIDs with line items that match this, in order of OrderID.
+
+SELECT OrderID
+FROM dbo.OrderDetails
+WHERE Quantity >= 60
+GROUP BY OrderID, Quantity
+HAVING COUNT(*) > 1
+
+
+
+--39. Orders - accidental double-entry details
+--    Based on the previous question, we now want to show details of the order, for orders that match the above criteria.
+
+--USING CTE (Common Table Expressions)
+WITH AccidetanlOrdersDetails
+AS
+(
+	SELECT OrderID
+	FROM dbo.OrderDetails
+	WHERE Quantity >= 60
+	GROUP BY OrderID, Quantity
+	HAVING COUNT(*) > 1
+)
+
+SELECT OrderID, ProductID, UnitPrice, Quantity, Discount
+FROM dbo.OrderDetails
+WHERE OrderID IN (SELECT OrderID FROM AccidetanlOrdersDetails)
+ORDER BY OrderID, Quantity
+
+--USING Temp Tables
+DROP TABLE IF exists #AccidetanlOrdersDetails
+CREATE TABLE #AccidetanlOrdersDetails
+(
+OrderID int,
+)
+INSERT INTO #AccidetanlOrdersDetails
+	SELECT OrderID
+	FROM dbo.OrderDetails
+	WHERE Quantity >= 60
+	GROUP BY OrderID, Quantity
+	HAVING COUNT(*) > 1
+
+SELECT OrderID, ProductID, UnitPrice, Quantity, Discount
+FROM dbo.OrderDetails
+WHERE OrderID IN (SELECT OrderID FROM #AccidetanlOrdersDetails)
+ORDER BY OrderID, Quantity
+
+
