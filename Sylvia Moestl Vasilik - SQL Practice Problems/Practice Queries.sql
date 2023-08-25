@@ -21,6 +21,7 @@ FROM dbo.Employees
 WHERE Title LIKE '%Rep%'
 
 
+
 --4. Sales Representatives in the United States. 
 --   Now we’d like to see the same columns as above, but only for those employees that both have the title of Sales Representative, and also are in the United States.
 
@@ -459,5 +460,56 @@ SELECT OrderID, ProductID, UnitPrice, Quantity, Discount
 FROM dbo.OrderDetails
 WHERE OrderID IN (SELECT OrderID FROM #AccidetanlOrdersDetails)
 ORDER BY OrderID, Quantity
+
+
+
+--41. Late orders
+--    Some customers are complaining about their orders arriving late. Which orders are late?
+
+SELECT OrderID, CAST(OrderDate AS Date) OrderDate, CAST(RequiredDate AS Date) RequiredDate, CAST(ShippedDate AS Date) ShippedDate
+FROM dbo.Orders
+WHERE ShippedDate >= RequiredDate
+
+
+
+--42. Late orders - which employees?
+--    Some salespeople have more orders arriving late than others. Maybe they're not following up on the order process, and need more training. Which salespeople
+--    have the most orders arriving late?
+
+SELECT emp.EmployeeID, emp.LastName, COUNT(emp.EmployeeID) AS TotalLateOrders
+FROM dbo.Employees as emp
+	JOIN dbo.Orders as ord
+		ON emp.EmployeeID = ord.EmployeeID
+WHERE ShippedDate >= RequiredDate
+GROUP BY emp.EmployeeID, emp.LastName
+ORDER BY TotalLateOrders DESC
+
+
+
+--43. Late orders vs. total orders
+--    Andrew, the VP of sales, has been doing some more thinking about the problem of late orders. He realizes that just looking at the number of orders
+--    arriving late for each salesperson isn't a good idea. It needs to be compared against the 'total' number of orders per salesperson.
+
+WITH LateOrders AS
+(
+	SELECT EmployeeID, COUNT(EmployeeID) AS LateOrders
+	FROM dbo.Orders
+	WHERE ShippedDate >= RequiredDate
+	GROUP BY EmployeeID
+),
+AllOrders AS
+(
+	SELECT EmployeeID, COUNT(EmployeeID) AS LateOrders
+	FROM dbo.Orders
+	GROUP BY EmployeeID
+)
+SELECT emp.EmployeeID, LastName, allo.LateOrders AS TotalOrders, late.LateOrders AS LateOrders
+FROM dbo.Employees as emp
+	JOIN AllOrders as allo
+		ON allo.EmployeeID = emp.EmployeeID
+	JOIN LateOrders as late
+		ON late.EmployeeID = emp.EmployeeID
+ORDER BY EmployeeID
+
 
 
