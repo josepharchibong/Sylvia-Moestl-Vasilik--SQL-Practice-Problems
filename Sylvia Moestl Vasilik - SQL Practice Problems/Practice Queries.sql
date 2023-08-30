@@ -513,3 +513,81 @@ ORDER BY EmployeeID
 
 
 
+--44. Late orders vs. total orders - missing employee
+--    There's an employee missing in the answer from the problem above. Fix the SQL to show all employees who have taken orders.
+
+WITH LateOrders AS
+(
+	SELECT EmployeeID, COUNT(EmployeeID) AS LateOrders
+	FROM dbo.Orders
+	WHERE ShippedDate >= RequiredDate
+	GROUP BY EmployeeID
+),
+AllOrders AS
+(
+	SELECT EmployeeID, COUNT(EmployeeID) AS LateOrders
+	FROM dbo.Orders
+	GROUP BY EmployeeID
+)
+SELECT emp.EmployeeID, LastName, allo.LateOrders AS TotalOrders, late.LateOrders AS LateOrders
+FROM dbo.Employees as emp
+	JOIN AllOrders as allo
+		ON allo.EmployeeID = emp.EmployeeID
+	LEFT JOIN LateOrders as late
+		ON late.EmployeeID = emp.EmployeeID
+ORDER BY EmployeeID
+
+
+
+--45. Late orders vs. total orders - fix null
+--    Continuing on the answer for above query, let's fix the results for row 5 - Buchanan. He should have a 0 instead of a Null in LateOrders.
+
+WITH LateOrders AS
+(
+	SELECT EmployeeID, COUNT(EmployeeID) AS LateOrders
+	FROM dbo.Orders
+	WHERE ShippedDate >= RequiredDate
+	GROUP BY EmployeeID
+),
+AllOrders AS
+(
+	SELECT EmployeeID, COUNT(EmployeeID) AS LateOrders
+	FROM dbo.Orders
+	GROUP BY EmployeeID
+)
+SELECT emp.EmployeeID, LastName, allo.LateOrders AS TotalOrders, ISNULL(late.LateOrders, 0) AS LateOrders
+FROM dbo.Employees as emp
+	JOIN AllOrders as allo
+		ON allo.EmployeeID = emp.EmployeeID
+	LEFT JOIN LateOrders as late
+		ON late.EmployeeID = emp.EmployeeID
+ORDER BY EmployeeID
+
+
+
+--46. Late orders vs. total orders - percentage
+--    Now we want to get the percentage of late orders over total orders.
+
+WITH LateOrders AS
+(
+	SELECT EmployeeID, COUNT(EmployeeID) AS LateOrders
+	FROM dbo.Orders
+	WHERE ShippedDate >= RequiredDate
+	GROUP BY EmployeeID
+),
+AllOrders AS
+(
+	SELECT EmployeeID, COUNT(EmployeeID) AS LateOrders
+	FROM dbo.Orders
+	GROUP BY EmployeeID
+)
+SELECT emp.EmployeeID, LastName, allo.LateOrders AS TotalOrders, ISNULL(late.LateOrders, 0) AS LateOrders,
+COALESCE((CAST(late.LateOrders as float)/CAST(allo.LateOrders as float))*100, 0) AS PercentLateOrders
+FROM dbo.Employees as emp
+	JOIN AllOrders as allo
+		ON allo.EmployeeID = emp.EmployeeID
+	LEFT JOIN LateOrders as late
+		ON late.EmployeeID = emp.EmployeeID
+ORDER BY EmployeeID
+
+
