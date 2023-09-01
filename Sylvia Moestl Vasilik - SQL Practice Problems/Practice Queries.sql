@@ -591,3 +591,58 @@ FROM dbo.Employees as emp
 ORDER BY EmployeeID
 
 
+
+--47. Late orders vs. total orders - fix decimal 
+--    So now for the PercentageLateOrders, we get a decimal value like we should. But to make the output easier to read, let's cut the PercentLateOrders off 
+--    at 2 digits to the right of the decimal point.
+
+WITH LateOrders AS
+(
+	SELECT EmployeeID, COUNT(EmployeeID) AS LateOrders
+	FROM dbo.Orders
+	WHERE ShippedDate >= RequiredDate
+	GROUP BY EmployeeID
+),
+AllOrders AS
+(
+	SELECT EmployeeID, COUNT(EmployeeID) AS LateOrders
+	FROM dbo.Orders
+	GROUP BY EmployeeID
+)
+SELECT emp.EmployeeID, LastName, allo.LateOrders AS TotalOrders, ISNULL(late.LateOrders, 0) AS LateOrders,
+ROUND(COALESCE((CAST(late.LateOrders as float)/CAST(allo.LateOrders as float))*100, 0), 2) AS PercentLateOrders
+FROM dbo.Employees as emp
+	JOIN AllOrders as allo
+		ON allo.EmployeeID = emp.EmployeeID
+	LEFT JOIN LateOrders as late
+		ON late.EmployeeID = emp.EmployeeID
+ORDER BY EmployeeID
+
+
+--48. Customer grouping
+--    Andrew Fuller, the VP of sales at Northwind, would like to do a sales campaign for existing customers. He'd like to categorize customers into groups, based on how much
+--    they ordered in 2016. Then, depending on which group the customer is in, he will target the customer with different sales materials. The customer grouping categories 
+--    are 0 to 1,000, 1,000 to 5,000, 5,000 to 10,000, and over 10,000. A good starting point for this query is the answer from the problem “High-value customers - total orders.
+--    We don’t want to show customers who don’t have any orders in 2016. Order the results by CustomerID.
+
+SELECT cust.CustomerID, cust.CompanyName, SUM(ordd.UnitPrice * ordd.Quantity)  as TotalOrderAmount,
+	CASE 
+		WHEN SUM(ordd.UnitPrice * ordd.Quantity) BETWEEN 0 AND 1000
+			THEN 'Low'
+		WHEN SUM(ordd.UnitPrice * ordd.Quantity) BETWEEN 1001 AND 5000
+			THEN 'Medium'
+		WHEN SUM(ordd.UnitPrice * ordd.Quantity) BETWEEN 5001 AND 10000
+			THEN 'High'
+		WHEN SUM(ordd.UnitPrice * ordd.Quantity) > 10000
+			THEN 'Very High'
+	END AS CustomerGroup
+FROM dbo.Customers as cust
+	JOIN dbo.Orders as ords
+		ON cust.CustomerID = ords.CustomerID
+	JOIN dbo.OrderDetails as ordd
+		ON ords.OrderID = ordd.OrderID
+WHERE ords.OrderDate >= '20160101' AND ords.OrderDate < '20170101'
+GROUP BY cust.CustomerID, cust.CompanyName 
+ORDER BY 1
+
+
