@@ -646,3 +646,84 @@ GROUP BY cust.CustomerID, cust.CompanyName
 ORDER BY 1
 
 
+
+--49. Customer grouping - fix null
+--    There's a bug with the answer for the previous question. The CustomerGroup value for one of the rows is null. 
+--    Fix the SQL so that there are no nulls in the CustomerGroup field.
+
+SELECT cust.CustomerID, cust.CompanyName, SUM(ordd.UnitPrice * ordd.Quantity)  as TotalOrderAmount,
+	CASE 
+		WHEN SUM(ordd.UnitPrice * ordd.Quantity) < 1000
+			THEN 'Low'
+		WHEN SUM(ordd.UnitPrice * ordd.Quantity) >= 1000 AND SUM(ordd.UnitPrice * ordd.Quantity) < 5000
+			THEN 'Medium'
+		WHEN SUM(ordd.UnitPrice * ordd.Quantity) >= 5000 AND SUM(ordd.UnitPrice * ordd.Quantity) < 10000
+			THEN 'High'
+		WHEN SUM(ordd.UnitPrice * ordd.Quantity) > 10000
+			THEN 'Very High'
+	END AS CustomerGroup
+FROM dbo.Customers as cust
+	JOIN dbo.Orders as ords
+		ON cust.CustomerID = ords.CustomerID
+	JOIN dbo.OrderDetails as ordd
+		ON ords.OrderID = ordd.OrderID
+WHERE ords.OrderDate >= '20160101' AND ords.OrderDate < '20170101'
+GROUP BY cust.CustomerID, cust.CompanyName 
+ORDER BY 1
+
+
+
+--50. Customer grouping with percentage
+--    Based on the above query, show all the defined CustomerGroups, and the percentage in each. Sort by the total in each group, in descending order.
+
+WITH CustomerGroupCTE AS
+(
+	SELECT cust.CustomerID, cust.CompanyName, SUM(ordd.UnitPrice * ordd.Quantity)  as TotalOrderAmount,
+		CASE 
+			WHEN SUM(ordd.UnitPrice * ordd.Quantity) < 1000
+				THEN 'Low'
+			WHEN SUM(ordd.UnitPrice * ordd.Quantity) >= 1000 AND SUM(ordd.UnitPrice * ordd.Quantity) < 5000
+				THEN 'Medium'
+			WHEN SUM(ordd.UnitPrice * ordd.Quantity) >= 5000 AND SUM(ordd.UnitPrice * ordd.Quantity) < 10000
+				THEN 'High'
+			WHEN SUM(ordd.UnitPrice * ordd.Quantity) > 10000
+				THEN 'Very High'
+		END AS CustomerGroup
+	FROM dbo.Customers as cust
+		JOIN dbo.Orders as ords
+			ON cust.CustomerID = ords.CustomerID
+		JOIN dbo.OrderDetails as ordd
+			ON ords.OrderID = ordd.OrderID
+	WHERE ords.OrderDate >= '20160101' AND ords.OrderDate < '20170101'
+	GROUP BY cust.CustomerID, cust.CompanyName 
+)
+SELECT CustomerGroup, COUNT(*) AS TotalInGroup, ROUND(CONVERT(float, COUNT(*))/(SELECT CONVERT(float, COUNT(*)) FROM CustomerGroupCTE) * 100, 2) AS PercentageInGroup
+FROM CustomerGroupCTE
+GROUP BY CustomerGroup
+ORDER BY 2 DESC
+
+
+
+--51. Customer grouping - flexible
+--    Andrew, the VP of Sales is still thinking about how best to group customers, and define low, medium, high, and very high value customers. He now wants complete flexibility 
+--    in grouping the customers, based on the dollar amount they've ordered. He doesn’t want to have to edit SQL in order to change the boundaries of the customer groups.
+--    How would you write the SQL? There's a table called CustomerGroupThreshold that you will need to use. Use only orders from 2016.
+
+WITH Orders2016 AS
+(
+	SELECT cust.CustomerID, cust.CompanyName, SUM(ordd.UnitPrice * ordd.Quantity)  as TotalOrderAmount
+		FROM dbo.Customers as cust
+			JOIN dbo.Orders as ords
+				ON cust.CustomerID = ords.CustomerID
+			JOIN dbo.OrderDetails as ordd
+				ON ords.OrderID = ordd.OrderID
+		WHERE ords.OrderDate >= '20160101' AND ords.OrderDate < '20170101'
+		GROUP BY cust.CustomerID, cust.CompanyName
+)
+SELECT ord16.CustomerID, ord16.CompanyName, ord16.TotalOrderAmount, cgt.CustomerGroupName
+	FROM Orders2016 as ord16 
+		JOIN dbo.CustomerGroupThresholds as cgt
+			ON ord16.TotalOrderAmount BETWEEN cgt.RangeBottom AND cgt.RangeTop
+		ORDER BY ord16.CustomerID
+
+
