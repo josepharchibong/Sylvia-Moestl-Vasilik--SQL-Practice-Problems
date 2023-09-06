@@ -727,3 +727,57 @@ SELECT ord16.CustomerID, ord16.CompanyName, ord16.TotalOrderAmount, cgt.Customer
 		ORDER BY ord16.CustomerID
 
 
+
+--52. Countries with suppliers or customers.
+--    Some Northwind employees are planning a business trip, and would like to visit as many suppliers and customers as possible. For their planning, they’d like to see a list
+--    of all countries where suppliers and/or customers are based.
+
+SELECT Country
+FROM dbo.Customers
+UNION
+SELECT Country
+FROM dbo.Suppliers
+
+
+
+--53. Countries with suppliers or customers, version 2.
+--    The employees going on the business trip don’t want just a raw list of countries, they want more details like SUpplierCountry & CustomerCountry.
+
+WITH SupplierCountry AS
+(
+SELECT DISTINCT Country
+FROM dbo.Suppliers
+),
+CustomerCountry AS
+(
+SELECT DISTINCT Country
+FROM dbo.Customers
+)
+SELECT *
+FROM SupplierCountry as supc
+	FULL OUTER JOIN CustomerCountry as cusc
+		ON supc.Country = cusc.Country
+
+
+
+--54. Countries with suppliers or customers - version 3
+--    The output of the above is improved, but it’s still not ideal. What we’d really like to see is the country name, the total suppliers, and the total customers.
+
+WITH SupplierCountry AS
+(
+SELECT Country, COUNT(Country) AS TotalSuppliers
+FROM dbo.Suppliers
+GROUP BY Country
+),
+CustomerCountry AS
+(
+SELECT Country, COUNT(Country) AS TotalCustomers
+FROM dbo.Customers
+GROUP BY Country
+)
+SELECT ISNULL(supc.Country, cusc.Country) AS Country, ISNULL(TotalSuppliers, 0) AS TotalSuppliers,  ISNULL(TotalCustomers, 0) AS TotalCustomers
+FROM SupplierCountry as supc
+	FULL OUTER JOIN CustomerCountry as cusc
+		ON supc.Country = cusc.Country
+
+
