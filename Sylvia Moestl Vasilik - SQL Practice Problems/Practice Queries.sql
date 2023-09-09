@@ -781,3 +781,50 @@ FROM SupplierCountry as supc
 		ON supc.Country = cusc.Country
 
 
+
+--55. First order in each country
+--    Looking at the Orders table—we’d like to show details for each order that was the first in that particular country, ordered by OrderID. So, we need one row per ShipCountry, 
+--    and CustomerID, OrderID, and OrderDate should be of the first order from that country.
+
+WITH DateOrderbyCountry AS
+(
+SELECT ShipCountry, CustomerID, OrderID, CAST(OrderDate as date) AS OrderDate, ROW_NUMBER() OVER(PARTITION BY ShipCountry ORDER BY ShipCountry) AS RowNumberPerCountry
+FROM dbo.Orders
+)
+SELECT ShipCountry, CustomerID, OrderID, OrderDate
+FROM DateOrderbyCountry
+WHERE RowNumberPerCountry = '1'
+ORDER BY ShipCountry, OrderID
+
+
+
+--56. Customers with multiple orders in 5 day period.
+--    There are some customers for whom freight is a major expense when ordering from Northwind. However, by batching up their orders, and making one larger order 
+--    instead of multiple smaller orders in a short period of time, they could reduce their freight costs significantly. Show those customers who have made more than 1
+--    order in a 5 day period. The sales people will use this to help customers reduce their costs.
+--    Note: There are more than one way of solving this kind of problem. For this problem, we will not be using Window functions.
+
+SELECT inito.CustomerID, inito.OrderID AS InitialOrderID, CAST(inito.OrderDate as date) AS InitialOrderDate, nexto.OrderID AS NextOrderID, CAST(nexto.OrderDate as date) AS NextOrderDate,
+		DATEDIFF(DD, inito.OrderDate, nexto.OrderDate) AS DaysBetween
+FROM dbo.Orders as inito
+	JOIN dbo.Orders as nexto
+		ON inito.CustomerID = nexto.CustomerID
+WHERE inito.OrderID < nexto.OrderID AND DATEDIFF(DD, inito.OrderDate, nexto.OrderDate) <=5
+ORDER BY inito.CustomerID, inito.OrderID
+
+
+
+--57. Customers with multiple orders in 5 day period, version 2.
+--    There’s another way of solving the problem above, using Window functions. We would like to see the following results.
+
+WITH OrderDates AS
+(
+SELECT CustomerID, CAST(OrderDate as date) AS OrderDate, LEAD(CAST(OrderDate as date), 1) OVER (PARTITION BY CustomerID ORDER BY CustomerID, OrderDate) AS NextOrderDate
+FROM dbo.Orders
+)
+SELECT *, DATEDIFF(DD, OrderDate, NextOrderDate) AS DaysBetween
+FROM OrderDates
+WHERE OrderDate < NextOrderDate AND DATEDIFF(DD, OrderDate, NextOrderDate) <=5
+ORDER BY CustomerID, OrderDate
+
+----------------------------END------------------------------------
